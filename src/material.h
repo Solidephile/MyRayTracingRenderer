@@ -9,6 +9,11 @@ class material
 public:
     virtual ~material() = default;
 
+    virtual color emitted(double u, double v, const point3 &p) const
+    {
+        return color(0, 0, 0);
+    }
+
     virtual bool scatter(
         const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered) const
     {
@@ -43,7 +48,8 @@ private:
 class metal : public material
 {
 public:
-    metal(const color &aldebo, double fuzz) : aldebo(aldebo), fuzz(fuzz < 1 ? fuzz : 1) {}
+    metal(const color &aldebo, double fuzz) : tex(make_shared<solid_color>(aldebo)), fuzz(fuzz < 1 ? fuzz : 1) {}
+    metal(shared_ptr<texture> tex, double fuzz) : tex(tex), fuzz(fuzz < 1 ? fuzz : 1){}
 
     bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered)
         const override
@@ -51,12 +57,12 @@ public:
         vec3 reflected = reflect(r_in.direction(), rec.normal);
         reflected = unit_vector(reflected) + (fuzz * random_unit_vector());
         scattered = ray(rec.p, reflected, r_in.time());
-        attenuation = aldebo;
+        attenuation = tex->value(rec.u, rec.v, rec.p);
         return (dot(scattered.direction(), rec.normal) > 0);
     }
 
 private:
-    color aldebo;
+    shared_ptr<texture> tex;
     double fuzz;
 };
 
@@ -99,6 +105,39 @@ private:
         r0 = r0 * r0;
         return r0 + (1 - r0) * std::pow((1 - cosine), 5);
     }
+};
+
+class diffuse_light : public material
+{
+public:
+    diffuse_light(shared_ptr<texture> tex) : tex(tex) {}
+    diffuse_light(const color &emit) : tex(make_shared<solid_color>(emit)) {}
+
+    color emitted(double u, double v, const point3 &p) const override
+    {
+        return tex->value(u, v, p);
+    }
+
+private:
+    shared_ptr<texture> tex;
+};
+
+class isotropic : public material
+{
+public:
+    isotropic(const color &aldebo) : tex(make_shared<solid_color>(aldebo)) {}
+    isotropic(shared_ptr<texture> tex) : tex(tex) {}
+
+    bool scatter(const ray &r_in, const hit_record &rec, color &attenuation, ray &scattered)
+        const override
+    {
+        scattered = ray(rec.p, random_unit_vector(), r_in.time());
+        attenuation = tex->value(rec.u, rec.v, rec.p);
+        return true;
+    }
+
+private:
+    shared_ptr<texture> tex;
 };
 
 #endif
