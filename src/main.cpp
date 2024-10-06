@@ -235,35 +235,34 @@ void cornell_box()
 {
     hittable_list world;
 
-    auto red = make_shared<lambertian>(color(.65, .05, .05));
+    auto red = make_shared<metal>(color(.65, .05, .05), 0.05);
+    auto checker = make_shared<lambertian>(make_shared<checker_texture>(0.012, color(.53, .53, .53), color(.73, .73, .73)));
     auto white = make_shared<lambertian>(color(.73, .73, .73));
-    auto green = make_shared<lambertian>(color(.12, .45, .15));
+    auto green = make_shared<metal>(color(.12, .45, .15), 0.05);
     auto light = make_shared<diffuse_light>(color(8, 8, 8));
+    auto glass = make_shared<dielectric>(1.5);
 
     world.add(make_shared<quad>(point3(555, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), green));
     world.add(make_shared<quad>(point3(0, 0, 0), vec3(0, 555, 0), vec3(0, 0, 555), red));
-    world.add(make_shared<quad>(point3(413, 554, 402), vec3(-270, 0, 0), vec3(0, 0, -245), light));
-    world.add(make_shared<quad>(point3(0, 555, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
-    world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), white));
-    world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
+    world.add(make_shared<quad>(point3(383, 554, 372), vec3(-210, 0, 0), vec3(0, 0, -185), light));
+    world.add(make_shared<quad>(point3(0, 555, 0), vec3(555, 0, 0), vec3(0, 0, 555), checker));
+    world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), checker));
+    world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), checker));
+    world.add(make_shared<sphere>(point3(190,90,190), 90, glass));
 
     shared_ptr<hittable> box1 = box(point3(0, 0, 0), point3(165, 330, 165), white);
-    // box1 = make_shared<rotate_y>(box1, 15);
-    // box1 = make_shared<translate>(box1, vec3(265, 0, 295));
-    box1 = make_shared<transform>(box1, vec3(265, 0, 295), vec3(0, 15, 0));
+    box1 = make_shared<translate>(make_shared<rotate>(box1, vec3(0, 15, 0)), vec3(265, 0, 295));
     world.add(box1);
 
-    shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
-    // box2 = make_shared<rotate_y>(box2, -18);
-    // box2 = make_shared<translate>(box2, vec3(130, 0, 65));
-    box2 = make_shared<transform>(box2, vec3(130, 0, 65), vec3(0, -18, 0));
-    world.add(box2);
+    //shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
+    //box2 = make_shared<translate>(make_shared<rotate>(box2, vec3(0, -18, 0)), vec3(130, 0, 65));
+    //world.add(box2);
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 800;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 1500;
     cam.max_depth = 50;
     cam.background = color(0, 0, 0);
 
@@ -294,11 +293,11 @@ void cornell_smoke()
     world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), white));
 
     shared_ptr<hittable> box1 = box(point3(0, 0, 0), point3(165, 330, 165), white);
-    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<rotate>(box1, vec3(0, 15, 0));
     box1 = make_shared<translate>(box1, vec3(265, 0, 295));
 
     shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
-    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<rotate>(box2, vec3(0, -18, 0));
     box2 = make_shared<translate>(box2, vec3(130, 0, 65));
 
     world.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
@@ -326,30 +325,35 @@ void test()
 {
     hittable_list world;
 
-    auto checker = make_shared<checker_texture>(2, color(.5, .5, .5), color(.7, .7, .7));
+    auto checker = make_shared<checker_texture>(2, color(.2, .2, .2), color(.8, .8, .8));
     auto pertext = make_shared<noise_texture>(1);
 
-    auto block = make_shared<lambertian>(color(0.8, 0.5, 0.4));
-    auto ground = make_shared<metal>(checker, 0.1);
+    auto block = make_shared<lambertian>(color(0.8, 0.75, 0.75));
+    auto red = make_shared<lambertian>(color(0.9, 0.5, 0.5));
+    auto ground = make_shared<lambertian>(checker);
+    auto glass = make_shared<dielectric>(1.5);
+    auto light = make_shared<diffuse_light>(color(2, 2, 0.5));
 
-    shared_ptr<hittable> box0 = box(point3(-0.5, -0.5, -0.5), point3(0.5, 0.5, 0.5), block);
-    shared_ptr<hittable> box1 = make_shared<transform>(box0, vec3(0, -2.5, -5), vec3(0, 45, 0));
-    shared_ptr<hittable> box2 = make_shared<transform>(box0, vec3(0, -1.4, -5), vec3(0, 0, 0));
-    world.add(box1);
-    world.add(box2);
+    auto box0 = box(point3(-1, -1, -1), point3(1, 1, 1), block);
+    auto sphere0 = make_shared<sphere>(point3(0, 0, 0), 0.6, glass);
+    auto light_source = make_shared<sphere>(point3(0, -2, -2), 0.2, light);
 
-    world.add(make_shared<quad>(point3(-20, -3.1, -20), vec3(40, 0, 0), vec3(0, 0, 40), ground));
+    auto box1 = make_shared<translate>(make_shared<rotate>(box0, vec3(0, 0, 0)), vec3(0, -1.5, -5));
+    auto sphere1 = make_shared<translate>(sphere0, vec3(0, -1.5, -5));
+
+    world.add(sphere1);
+    world.add(make_shared<quad>(point3(-20, -2.5, -20), vec3(40, 0, 0), vec3(0, 0, 40), ground));
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 200;
-    cam.samples_per_pixel = 50;
+    cam.image_width = 100;
+    cam.samples_per_pixel = 1000;
     cam.max_depth = 50;
-    cam.background = color(135.0 / 255.0, 206.0 / 255.0, 245.0 / 255.0);
+    cam.background = color(0.5, 0.6, 1.0);
 
     cam.vfov = 40;
-    cam.lookfrom = point3(0, 1, 2);
+    cam.lookfrom = point3(0, 0.5, 2);
     cam.lookat = point3(0, 0, 0);
     cam.vup = vec3(0, 1, 0);
 
@@ -404,7 +408,7 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth)
 
     auto emat = make_shared<lambertian>(make_shared<image_texture>("earthmap.jpg"));
     world.add(make_shared<sphere>(point3(400, 200, 400), 100, emat));
-    auto pertext = make_shared<noise_texture>(0.2);
+    auto pertext = make_shared<noise_texture>(0.01);
     world.add(make_shared<sphere>(point3(220, 280, 300), 80, make_shared<lambertian>(pertext)));
 
     hittable_list boxes2;
@@ -416,8 +420,8 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth)
     }
 
     world.add(make_shared<translate>(
-        make_shared<rotate_y>(
-            make_shared<bvh_node>(boxes2), 15),
+        make_shared<rotate>(
+            make_shared<bvh_node>(boxes2), vec3(0, 15, 0)),
         vec3(-100, 270, 395)));
 
     camera cam;
@@ -467,7 +471,7 @@ int main()
         cornell_smoke();
         break;
     case 9:
-        final_scene(800, 10000, 40);
+        final_scene(200, 200, 40);
         break;
     default:
         test();
