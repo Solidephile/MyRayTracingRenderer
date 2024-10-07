@@ -42,6 +42,15 @@ public:
     }
 
     aabb bounding_box() const override { return bbox; }
+    vec3 center() const override
+    {
+        vec3 center = vec3(0, 0, 0);
+        for (const auto &object : objects)
+        {
+            center += object->center();
+        }
+        return center / objects.size();
+    }
 
 private:
     aabb bbox;

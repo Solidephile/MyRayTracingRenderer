@@ -26,8 +26,6 @@ public:
         bbox = aabb(bbox_diagonal1, bbox_diagonal2);
     }
 
-    aabb bounding_box() const override { return bbox; }
-
     bool hit(const ray &r, interval ray_t, hit_record &rec) const override
     {
         auto denom = dot(normal, r.direction());
@@ -70,6 +68,9 @@ public:
         rec.v = b;
         return true;
     }
+
+    aabb bounding_box() const override { return bbox; }
+    vec3 center() const { return Q + u/2 + v/2; }
 
 private:
     point3 Q;

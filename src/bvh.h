@@ -64,6 +64,8 @@ public:
     }
 
     aabb bounding_box() const override { return bbox; }
+    vec3 center() const override { return vec3(0, 0, 0); }
+    //a bvh_node does not return center by default, for its copy of hittable_list is implicit.
 
 private:
     shared_ptr<hittable> left;

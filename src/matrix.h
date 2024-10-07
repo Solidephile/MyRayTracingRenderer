@@ -3,30 +3,55 @@
 
 #include "rtweekend.h"
 
-class matrix // orthogonal matrix
+// orthogonal matrix
+class matrix
 {
 public:
     double m[4][4];
 
-    matrix() : m{0} {}
+    matrix()
+    {
+        for (int i = 0; i < 4; ++i)
+        {
+            for (int j = 0; j < 4; ++j)
+            {
+                m[i][j] = (i == j) ? 1 : 0; // Identity matrix
+            }
+        }
+    }
+    
     matrix(vec3 p, bool is_point) : m{0}
     {
         m[0][0] = p.x();
         m[0][1] = p.y();
         m[0][2] = p.z();
         m[0][3] = is_point;
+        // in orthogonal matrix, the fourth row canbe 0 or 1, used to indicate whether it is a point or a vector
     }
 
-    matrix(vec3 euler_xyz, vec3 offset) : m{0} // return the orthogonal matrix of rotation and translation
+    matrix(vec3 x, vec3 y, vec3 z) : m{0}
+    {
+        for(int i = 0; i < 3; i++)
+        {
+            m[0][i] = x[i];
+            m[1][i] = y[i];
+            m[2][i] = z[i];
+        }
+        m[3][3] = 1;
+    }
+
+    // euler_xyz is in degrees
+    // offset is the translation vector
+    matrix(vec3 euler_xyz, vec3 offset) : m{0}
     {
         matrix translate;
         translate.m[3][0] = offset.x();
         translate.m[3][1] = offset.y();
         translate.m[3][2] = offset.z();
-        translate.m[3][3] = 1;
-        translate.m[0][0] = 1;
-        translate.m[1][1] = 1;
-        translate.m[2][2] = 1;
+        for (int i = 0; i < 4; i++)
+        {
+            m[i][i] = 1;
+        }
 
         double alpha, beta, theta;
         alpha = degrees_to_radians(euler_xyz[0]);
@@ -34,14 +59,16 @@ public:
         theta = degrees_to_radians(euler_xyz[2]);
 
         matrix rotation[3];
-        rotation[0].m[0][0] = 1;
+        for (int i = 0; i < 3; i++)
+        {
+            rotation[i].m[i][i] = 1;
+        }
         rotation[0].m[1][1] = std::cos(alpha);
         rotation[0].m[2][1] = -std::sin(alpha);
         rotation[0].m[1][2] = std::sin(alpha);
         rotation[0].m[2][2] = std::cos(alpha);
 
         rotation[1].m[0][0] = std::cos(beta);
-        rotation[1].m[1][1] = 1;
         rotation[1].m[2][0] = std::sin(beta);
         rotation[1].m[0][2] = -std::sin(beta);
         rotation[1].m[2][2] = std::cos(beta);
@@ -50,7 +77,6 @@ public:
         rotation[2].m[1][0] = -std::sin(theta);
         rotation[2].m[0][1] = std::sin(theta);
         rotation[2].m[1][1] = std::cos(theta);
-        rotation[2].m[2][2] = 1;
 
         matrix rotate = rotation[2] * rotation[1] * rotation[0];
         rotate.m[3][3] = 1;
@@ -130,6 +156,11 @@ public:
             }
         }
         return result;
+    }
+
+    vec3 operator[](int i)
+    {
+        return vec3(m[i][0], m[i][1], m[i][2]);
     }
 };
 

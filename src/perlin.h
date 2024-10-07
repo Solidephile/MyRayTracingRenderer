@@ -10,7 +10,8 @@ public:
     {
         for (int i = 0; i < point_count; i++)
         {
-            randvec[i] = unit_vector(vec3::random(-1, 1)); // Generate a tile of 3d random vectors
+            randvec[i] = unit_vector(vec3::random(-1, 1)); 
+            // Generate a tile of 3d random vectors
         }
 
         perlin_generate_perm(perm_x);

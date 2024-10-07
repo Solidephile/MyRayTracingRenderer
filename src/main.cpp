@@ -11,6 +11,32 @@
 #include "texture.h"
 
 //each function represents a render scene
+void simple_sphere()
+{
+    // World
+    hittable_list world;
+
+    auto checker = make_shared<checker_texture>(0.32, color(.2, .3, .1), color(.9, .9, .9));
+    world.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(checker)));
+
+    // Camera
+    camera cam;
+
+    cam.aspect_ratio = 16.0 / 9.0;
+    cam.image_width = 1200;
+    cam.samples_per_pixel = 100;
+    cam.max_depth = 50;
+    cam.background = color(0.70, 0.80, 1.00);
+
+    cam.vfov = 20;
+    cam.lookfrom = point3(13, 2, 3);
+    cam.lookat = point3(0, 0, 0);
+    cam.vup = vec3(0, 1, 0);
+
+    cam.defocus_angle = 0;
+
+    cam.render(world);
+}
 
 void bouncing_spheres()
 {
@@ -248,21 +274,22 @@ void cornell_box()
     world.add(make_shared<quad>(point3(0, 555, 0), vec3(555, 0, 0), vec3(0, 0, 555), checker));
     world.add(make_shared<quad>(point3(0, 0, 0), vec3(555, 0, 0), vec3(0, 0, 555), checker));
     world.add(make_shared<quad>(point3(0, 0, 555), vec3(555, 0, 0), vec3(0, 555, 0), checker));
-    world.add(make_shared<sphere>(point3(190,90,190), 90, glass));
 
     shared_ptr<hittable> box1 = box(point3(0, 0, 0), point3(165, 330, 165), white);
-    box1 = make_shared<translate>(make_shared<rotate>(box1, vec3(0, 15, 0)), vec3(265, 0, 295));
+    //box1 = make_shared<translate>(make_shared<rotate>(box1, vec3(0, 15, 0)), vec3(265, 0, 295))
+    box1 = make_shared<transform>(box1, vec3(1, 1, 1), vec3(0, 15, 0), vec3(265, 0, 295));
     world.add(box1);
 
-    //shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
+    shared_ptr<hittable> box2 = box(point3(0, 0, 0), point3(165, 165, 165), white);
     //box2 = make_shared<translate>(make_shared<rotate>(box2, vec3(0, -18, 0)), vec3(130, 0, 65));
-    //world.add(box2);
+    box2 = make_shared<transform>(box2, vec3(1, 1, 1), vec3(0, -18, 0), vec3(130, 0, 65));
+    world.add(box2);
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
-    cam.image_width = 800;
-    cam.samples_per_pixel = 1500;
+    cam.image_width = 100;
+    cam.samples_per_pixel = 100;
     cam.max_depth = 50;
     cam.background = color(0, 0, 0);
 
@@ -328,27 +355,26 @@ void test()
     auto checker = make_shared<checker_texture>(2, color(.2, .2, .2), color(.8, .8, .8));
     auto pertext = make_shared<noise_texture>(1);
 
-    auto block = make_shared<lambertian>(color(0.8, 0.75, 0.75));
+    auto block = make_shared<lambertian>(color(.63, .63, .75));
     auto red = make_shared<lambertian>(color(0.9, 0.5, 0.5));
     auto ground = make_shared<lambertian>(checker);
     auto glass = make_shared<dielectric>(1.5);
     auto light = make_shared<diffuse_light>(color(2, 2, 0.5));
 
-    auto box0 = box(point3(-1, -1, -1), point3(1, 1, 1), block);
-    auto sphere0 = make_shared<sphere>(point3(0, 0, 0), 0.6, glass);
+    auto box0 = box(point3(-1, -1, -1), point3(1, 1, 1), glass);
+    auto sphere0 = make_shared<sphere>(point3(0, 0, 0), 0.6, red);
     auto light_source = make_shared<sphere>(point3(0, -2, -2), 0.2, light);
 
-    auto box1 = make_shared<translate>(make_shared<rotate>(box0, vec3(0, 0, 0)), vec3(0, -1.5, -5));
-    auto sphere1 = make_shared<translate>(sphere0, vec3(0, -1.5, -5));
-
-    world.add(sphere1);
+    auto box1 = make_shared<transform>(box0, vec3(1, 1, 1), vec3(0, 20, 0), vec3(0, -1.5, -5));
+    auto sphere1 = make_shared<transform>(sphere0, vec3(0.5, 1, 0.5), vec3(0, 20, 0), vec3(0, -1.5, -5));
+    world.add(box1);
     world.add(make_shared<quad>(point3(-20, -2.5, -20), vec3(40, 0, 0), vec3(0, 0, 40), ground));
 
     camera cam;
 
     cam.aspect_ratio = 1.0;
     cam.image_width = 100;
-    cam.samples_per_pixel = 1000;
+    cam.samples_per_pixel = 500;
     cam.max_depth = 50;
     cam.background = color(0.5, 0.6, 1.0);
 
@@ -444,8 +470,10 @@ void final_scene(int image_width, int samples_per_pixel, int max_depth)
 
 int main()
 {
-    switch (7)
+    switch (71)
     {
+    case 0:
+        simple_sphere();
     case 1:
         bouncing_spheres();
         break;
