@@ -363,11 +363,13 @@ void test()
 
     auto box0 = box(point3(-1, -1, -1), point3(1, 1, 1), glass);
     auto sphere0 = make_shared<sphere>(point3(0, 0, 0), 0.6, red);
+    auto triangle0 = make_shared<triangle>(point3(-1, -1, 0), point3(2, 0, 0), point3(0, 2, 0), block);
     auto light_source = make_shared<sphere>(point3(0, -2, -2), 0.2, light);
 
     auto box1 = make_shared<transform>(box0, vec3(1, 1, 1), vec3(0, 20, 0), vec3(0, -1.5, -5));
     auto sphere1 = make_shared<transform>(sphere0, vec3(0.5, 1, 0.5), vec3(0, 20, 0), vec3(0, -1.5, -5));
-    world.add(box1);
+    auto triangle1 = make_shared<transform>(triangle0, vec3(1, 1, 1), vec3(0, 20, 0), vec3(0, -1, -5));
+    world.add(triangle1);
     world.add(make_shared<quad>(point3(-20, -2.5, -20), vec3(40, 0, 0), vec3(0, 0, 40), ground));
 
     camera cam;

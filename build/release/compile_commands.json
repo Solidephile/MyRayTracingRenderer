@@ -1,8 +1,0 @@
-[
-{
-  "directory": "D:/CWorkspace/RayTracing/build",
-  "command": "D:\\mingw\\bin\\g++.exe   -g -o CMakeFiles\\main.dir\\src\\main.cpp.obj -c D:\\CWorkspace\\RayTracing\\src\\main.cpp",
-  "file": "D:/CWorkspace/RayTracing/src/main.cpp",
-  "output": "CMakeFiles/main.dir/src/main.cpp.obj"
-}
-]

@@ -1,1 +1,4 @@
-build/release/CMakeCache.txt
+build/
+images/
+bin/
+.vscode/
