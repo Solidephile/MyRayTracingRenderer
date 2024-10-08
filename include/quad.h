@@ -159,6 +159,34 @@ private:
     double D; // Ax + By + Cz = D
 };
 
+inline shared_ptr<hittable_list> tetrahedron(const point3 &a, const point3 &b, const point3 &c, const point3 &d, shared_ptr<material> mat)
+{
+    //Returns a tetrahedron with the four vertices a, b, c, d.
+
+    //Return a single triangle if the the four vertices are coplanar.
+    if (std::fabs(dot(cross(b - a, c - a), d - a)) < 1e-8)
+        return make_shared<hittable_list>(make_shared<triangle>(a, b - a, c - a, mat));
+
+    auto tetrahedron = make_shared<hittable_list>();
+    point3 pts[4] = {a, b, c, d};
+    
+    // loop over the four vertices to make sure the normals point outwards
+    for(int i = 0; i < 4; i++)
+    {
+        auto n = cross(pts[(i+1)%4] - pts[i], pts[(i+2)%4] - pts[i]);
+        if(dot(n, pts[(i+3)%4] - pts[i]) > 0)
+        {
+            // reverse the order of the points
+            auto temp = pts[(i+1)%4];
+            pts[(i+1)%4] = pts[(i+2)%4];
+            pts[(i+2)%4] = temp;
+        }
+        tetrahedron->add(make_shared<triangle>(pts[i], pts[(i+1)%4] - pts[i], pts[(i+2)%4] - pts[i], mat));
+    }
+
+    return tetrahedron;
+}
+
 inline shared_ptr<hittable_list> box(const point3 &a, const point3 &b, shared_ptr<material> mat)
 {
     // Returns the 3D box (six sides) that contains the two opposite vertices a & b.
